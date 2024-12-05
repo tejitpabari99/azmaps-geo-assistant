@@ -1,0 +1,122 @@
+{
+    "name": "azmaps-skillset",
+    "description": "Extract content and generate embeddings",
+    "skills": [
+        {
+            "@odata.type": "#Microsoft.Skills.Text.HtmlToTextSkill",
+            "context": "/document",
+            "inputs": [
+                {
+                    "name": "content",
+                    "source": "/document/content"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "text",
+                    "targetName": "text"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.HtmlToTextSkill",
+            "context": "/document",
+            "inputs": [
+                {
+                    "name": "content",
+                    "source": "/document/content"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "text",
+                    "targetName": "usage_description"
+                }
+            ],
+            "textExtractionAlgorithm": "structured",
+            "elementSelector": "fieldset"
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+            "context": "/document",
+            "uri": "[Your Azure Function URL]",
+            "inputs": [
+                {
+                    "name": "content",
+                    "source": "/document/content"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "code_snippet",
+                    "targetName": "code_snippet"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.ExtractHTMLMetadata",
+            "context": "/document",
+            "inputs": [
+                {
+                    "name": "content",
+                    "source": "/document/content"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "title",
+                    "targetName": "title"
+                },
+                {
+                    "name": "description",
+                    "targetName": "description"
+                },
+                {
+                    "name": "keywords",
+                    "targetName": "keywords"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.StringSplitSkill",
+            "context": "/document/metadata_storage_name",
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/metadata_storage_name"
+                },
+                {
+                    "name": "delimiter",
+                    "source": " - "
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "split/0",
+                    "targetName": "category"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.SemanticTextEmbeddingSkill",
+            "context": "/document",
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/text"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "embedding",
+                    "targetName": "vector"
+                }
+            ]
+        }
+    ],
+    "cognitiveServices": {
+        "@odata.type": "#Microsoft.Azure.Search.CognitiveServicesByKey",
+        "description": "cognitive services",
+        "key": "[Your Cognitive Services Key]"
+    }
+}

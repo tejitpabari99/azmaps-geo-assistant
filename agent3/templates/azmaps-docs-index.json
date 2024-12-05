@@ -1,0 +1,86 @@
+{
+    "name": "azmaps-docs",
+    "fields": [
+        {
+            "name": "id",
+            "type": "Edm.String",
+            "key": true,
+            "filterable": true
+        },
+        {
+            "name": "content_type",
+            "type": "Edm.String",
+            "filterable": true,
+            "facetable": true,
+            "searchable": true
+        },
+        {
+            "name": "category",
+            "type": "Edm.String",
+            "filterable": true,
+            "facetable": true,
+            "searchable": true
+        },
+        {
+            "name": "title",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "description",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "keywords",
+            "type": "Collection(Edm.String)",
+            "searchable": true
+        },
+        {
+            "name": "code_snippet",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "api_reference",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "content",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "usage_description",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "vector",
+            "type": "Collection(Edm.Single)",
+            "dimensions": 1536,
+            "vectorSearchProfile": "ector-profile-hnsw-scalar"
+        }
+    ],
+    "vectorSearch": {
+        "algorithms": [
+            {
+                "name": "hnsw-1",
+                "kind": "hnsw",
+                "hnswParameters": {
+                    "m": 4,
+                    "efConstruction": 400,
+                    "efSearch": 500,
+                    "metric": "cosine"
+                }
+            }
+        ],
+        "profiles": [
+            {
+                "name": "vector-profile-hnsw-scalar",
+                "algorithm": "hnsw-1"
+            }
+        ]
+    }
+}
