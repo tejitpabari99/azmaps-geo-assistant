@@ -1,0 +1,60 @@
+Here are the revised, streamlined steps to build the Visualization Intelligence Agent:
+
+Goal
+This agent should be able to:
+	1. Understand basic CSV data structure
+	2. Suggest appropriate visualizations
+	3. Generate Azure Maps HTML code
+	4. Modify code based on user requests
+	5. Explain the code it generates
+	6. Handle iterative improvements
+
+
+Implementation Plan
+Initial Setup
+	1. Get Azure OpenAI API access
+	2. Collect and organize Azure Maps SDK samples you have
+	3. Basic Python environment (for API handling)
+	4. Azure Maps subscription key
+
+Sample Organization
+	1. Organize Azure Maps samples by type:
+		a. Heatmap examples
+		b. Route visualization samples
+		c. Pin/marker samples
+		d. Clustering examples
+	2. Document key parameters in each sample that can be modified
+	3. Note which visualization works best for what kind of data
+
+Azure OpenAI Integration
+	1. Create system prompt that explains agent's purpose
+	2. Feed it Azure Maps documentation and samples for context
+	3. Create basic prompt templates for common scenarios like:
+	```
+  - "Here's CSV data, suggest visualization"
+	  - "Modify existing visualization"
+	  - "Add features to current map"
+	```
+
+Basic Command Flow
+	1. Build simple input/output flow:
+		○ Accept CSV input
+		○ Read basic structure
+		○ Suggest visualization options
+		○ Generate/modify code based on user choice
+		○ Output HTML code
+
+Interactive Features
+	1. Create conversation flows for:
+		○ Visualization suggestions
+		○ Code modifications
+		○ Feature additions
+		○ Style customizations
+		○ Error handling
+
+Testing Framework
+	1. Create test cases with:
+		○ Different data formats
+		○ Various visualization requests
+		○ Common modification scenarios
+		○ Edge cases

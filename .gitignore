@@ -1,0 +1,8 @@
+*.env
+*.venv
+
+*__pycache__*
+*.python_packages
+*.vscode
+*__blobstorage__*
+*__queuestorage__*
