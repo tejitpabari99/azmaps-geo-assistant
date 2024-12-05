@@ -1,0 +1,10 @@
+{
+    "values": [
+        {
+            "recordId": "1",
+            "data": {
+                "content": "<!DOCTYPE html><html><head><title>Test</title></head><body><script>var map = new atlas.Map('myMap', {authOptions: {subscriptionKey: 'your_key'}});</script></body></html>"
+            }
+        }
+    ]
+}
