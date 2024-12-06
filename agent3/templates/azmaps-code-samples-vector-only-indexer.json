@@ -1,0 +1,67 @@
+{
+    "name": "azmaps-minimal-indexer",
+    "dataSourceName": "azmaps-code-samples-json",
+    "targetIndexName": "azmaps-code-sampels",
+    "skillsetName": "azmaps-code-samples-vector-only-skillset",
+    "fieldMappings": [
+        {
+            "sourceFieldName": "id",
+            "targetFieldName": "id"
+        },
+        {
+            "sourceFieldName": "content_type",
+            "targetFieldName": "content_type"
+        },
+        {
+            "sourceFieldName": "category",
+            "targetFieldName": "category"
+        },
+        {
+            "sourceFieldName": "title",
+            "targetFieldName": "title"
+        },
+        {
+            "sourceFieldName": "file_name",
+            "targetFieldName": "file_name"
+        },
+        {
+            "sourceFieldName": "description",
+            "targetFieldName": "description"
+        },
+        {
+            "sourceFieldName": "keywords",
+            "targetFieldName": "keywords"
+        },
+        {
+            "sourceFieldName": "code_snippet",
+            "targetFieldName": "code_snippet"
+        },
+        {
+            "sourceFieldName": "usage_description",
+            "targetFieldName": "usage_description"
+        },
+        {
+            "sourceFieldName": "content",
+            "targetFieldName": "content"
+        },
+        {
+            "sourceFieldName": "embedding_content",
+            "targetFieldName": "embedding_content"
+        }
+    ],
+    "outputFieldMappings": [
+        {
+            "sourceFieldName": "/document/vector",
+            "targetFieldName": "vector"
+        }
+    ],
+    "parameters": {
+        "maxFailedItems": -1,
+        "maxFailedItemsPerBatch": -1,
+        "configuration": {
+            "dataToExtract": "contentAndMetadata",
+            "parsingMode": "jsonArray",
+            "indexedFileNameExtensions": ".json"
+        }
+    }
+}

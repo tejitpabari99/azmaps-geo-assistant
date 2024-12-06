@@ -1,0 +1,64 @@
+{
+    "name": "azmaps-indexer",
+    "dataSourceName": "geoassistant0tejit0mdp",
+    "targetIndexName": "azmaps-code-samples",
+    "skillsetName": "azmaps-skillset",
+    "fieldMappings": [
+        {
+            "sourceFieldName": "metadata_storage_path",
+            "targetFieldName": "id",
+            "mappingFunction": {
+                "name": "base64Encode"
+            }
+        },
+        {
+            "sourceFieldName": "metadata_storage_name",
+            "targetFieldName": "content_type"
+        }
+    ],
+    "outputFieldMappings": [
+        {
+            "sourceFieldName": "/document/text",
+            "targetFieldName": "content"
+        },
+        {
+            "sourceFieldName": "/document/title",
+            "targetFieldName": "title"
+        },
+        {
+            "sourceFieldName": "/document/description",
+            "targetFieldName": "description"
+        },
+        {
+            "sourceFieldName": "/document/keywords",
+            "targetFieldName": "keywords"
+        },
+        {
+            "sourceFieldName": "/document/code_snippet",
+            "targetFieldName": "code_snippet"
+        },
+        {
+            "sourceFieldName": "/document/usage_description",
+            "targetFieldName": "usage_description"
+        },
+        {
+            "sourceFieldName": "/document/category",
+            "targetFieldName": "category"
+        },
+        {
+            "sourceFieldName": "/document/vector",
+            "targetFieldName": "vector"
+        }
+    ],
+    "parameters": {
+        "maxFailedItems": -1,
+        "maxFailedItemsPerBatch": -1,
+        "configuration": {
+            "dataToExtract": "contentAndMetadata",
+            "parsingMode": "default"
+        }
+    },
+    "schedule": {
+        "interval": "PT5M"
+    }
+}

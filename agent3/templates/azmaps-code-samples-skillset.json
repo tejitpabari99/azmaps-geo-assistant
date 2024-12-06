@@ -3,43 +3,27 @@
     "description": "Extract content and generate embeddings",
     "skills": [
         {
-            "@odata.type": "#Microsoft.Skills.Text.HtmlToTextSkill",
+            "@odata.type": "#Microsoft.Skills.Util.DocumentExtractionSkill",
+            "parsingMode": "default",
+            "dataToExtract": "contentAndMetadata",
             "context": "/document",
             "inputs": [
                 {
-                    "name": "content",
-                    "source": "/document/content"
+                    "name": "file_data",
+                    "source": "/document/file_data"
                 }
             ],
             "outputs": [
                 {
-                    "name": "text",
-                    "targetName": "text"
+                    "name": "content",
+                    "targetName": "content"
                 }
             ]
         },
         {
-            "@odata.type": "#Microsoft.Skills.Text.HtmlToTextSkill",
-            "context": "/document",
-            "inputs": [
-                {
-                    "name": "content",
-                    "source": "/document/content"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "text",
-                    "targetName": "usage_description"
-                }
-            ],
-            "textExtractionAlgorithm": "structured",
-            "elementSelector": "fieldset"
-        },
-        {
             "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
             "context": "/document",
-            "uri": "[Your Azure Function URL]",
+            "uri": "https://geoassistant-tejitpabari-azfunction.azurewebsites.net/api/azmaps_sample_extract_code?code=FxHuNZd0IRX6tT7nFO8DCeI9Ha5C-nsjS2FlUTpnVkk2AzFuC4jQeQ%3D%3D",
             "inputs": [
                 {
                     "name": "content",
@@ -50,6 +34,10 @@
                 {
                     "name": "code_snippet",
                     "targetName": "code_snippet"
+                },
+                {
+                    "name": "usage_description",
+                    "targetName": "usage_description"
                 }
             ]
         },
@@ -87,7 +75,7 @@
                 },
                 {
                     "name": "delimiter",
-                    "source": " - "
+                    "value": " - "
                 }
             ],
             "outputs": [
@@ -98,7 +86,7 @@
             ]
         },
         {
-            "@odata.type": "#Microsoft.Skills.Text.SemanticTextEmbeddingSkill",
+            "@odata.type": "#Microsoft.Skills.Text.OpenAIEmbeddingSkill",
             "context": "/document",
             "inputs": [
                 {
@@ -111,12 +99,10 @@
                     "name": "embedding",
                     "targetName": "vector"
                 }
-            ]
+            ],
+            "resourceUri": "https://openai-tejitpabari.openai.azure.com/",
+            "deploymentId": "text-embedding-ada-002",
+            "authenticationKind": "ManagedIdentity"
         }
-    ],
-    "cognitiveServices": {
-        "@odata.type": "#Microsoft.Azure.Search.CognitiveServicesByKey",
-        "description": "cognitive services",
-        "key": "[Your Cognitive Services Key]"
-    }
+    ]
 }

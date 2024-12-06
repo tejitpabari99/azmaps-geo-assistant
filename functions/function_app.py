@@ -32,12 +32,25 @@ def azmaps_sample_extract_code(req: func.HttpRequest) -> func.HttpResponse:
                         code_snippets.append(script.string)
                 
                 code_snippet = '\n'.join(code_snippets)
+
+                # Extract fieldset content
+                fieldset_tags = soup.find_all('fieldset')
+                usage_descriptions = []
+                for fieldset in fieldset_tags:
+                    if fieldset.string:
+                        usage_descriptions.append(fieldset.string.strip())
+                    else:
+                        # Get all text within fieldset even if nested
+                        usage_descriptions.append(fieldset.get_text(strip=True))
+                
+                usage_description = '\n'.join(usage_descriptions)
                 
                 # Add the record to results
                 results.append({
                     "recordId": recordId,
                     "data": {
-                        "code_snippet": code_snippet if code_snippet else "No Azure Maps code found"
+                        "code_snippet": code_snippet if code_snippet else "No Azure Maps code found",
+                        "usage_description": usage_description if usage_description else "No usage description found"
                     },
                     "errors": None,
                     "warnings": None
@@ -47,13 +60,13 @@ def azmaps_sample_extract_code(req: func.HttpRequest) -> func.HttpResponse:
                 results.append({
                     "recordId": recordId,
                     "data": {
-                        "code_snippet": None
+                        "code_snippet": None,
+                        "usage_description": None
                     },
                     "errors": [{"message": str(error)}],
                     "warnings": None
                 })
-                
-
+                        
         # Return the results
         return func.HttpResponse(
             body=json.dumps({"values": results}),

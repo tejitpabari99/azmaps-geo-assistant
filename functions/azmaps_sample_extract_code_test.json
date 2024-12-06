@@ -3,7 +3,19 @@
         {
             "recordId": "1",
             "data": {
-                "content": "<!DOCTYPE html><html><head><title>Test</title></head><body><script>var map = new atlas.Map('myMap', {authOptions: {subscriptionKey: 'your_key'}});</script></body></html>"
+                "content": "<!DOCTYPE html>\n<html>\n<head>\n    <title>Test Azure Maps Sample</title>\n</head>\n<body>\n    <fieldset>\n        This sample demonstrates how to create a simple points visualization on a map.\n    </fieldset>\n    \n    <div id='myMap'></div>\n    \n    <script>\n        // Sample Azure Maps code\n        var map = new atlas.Map('myMap', {\n            center: [-122.33, 47.6],\n            zoom: 12,\n            view: 'Auto'\n        });\n\n        var dataSource = new atlas.source.DataSource();\n        map.sources.add(dataSource);\n    </script>\n</body>\n</html>"
+            }
+        },
+        {
+            "recordId": "2",
+            "data": {
+                "content": "<!DOCTYPE html>\n<html>\n<head>\n    <title>Complex Azure Maps Sample</title>\n</head>\n<body>\n    <fieldset>\n        Main usage: Creating a heatmap visualization\n        <div>\n            This advanced sample shows how to create a heatmap of point data.\n        </div>\n    </fieldset>\n    \n    <div id='myMap'></div>\n    \n    <script>\n        // Complex heatmap implementation\n        var map = new atlas.Map('myMap', {\n            center: [-110, 50],\n            zoom: 4,\n            style: 'night'\n        });\n\n        var heatmap = new atlas.layer.HeatMapLayer(dataSource, 'heatmap', {\n            radius: 20,\n            intensity: 0.5\n        });\n    </script>\n</body>\n</html>"
+            }
+        },
+        {
+            "recordId": "3",
+            "data": {
+                "content": "<!DOCTYPE html>\n<html>\n<head>\n    <title>Empty Sample</title>\n</head>\n<body>\n    <div id='myMap'></div>\n</body>\n</html>"
             }
         }
     ]

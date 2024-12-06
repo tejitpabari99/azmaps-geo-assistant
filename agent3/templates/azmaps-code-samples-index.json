@@ -1,11 +1,17 @@
 {
-    "name": "azmaps-docs",
+    "name": "azmaps-code-samples",
     "fields": [
         {
             "name": "id",
             "type": "Edm.String",
             "key": true,
             "filterable": true
+        },
+        {
+            "name": "file_name",
+            "type": "Edm.String",
+            "filterable": true,
+            "searchable": true
         },
         {
             "name": "content_type",
@@ -49,7 +55,10 @@
         {
             "name": "content",
             "type": "Edm.String",
-            "searchable": true
+            "searchable": true,
+            "sortable": false,
+            "facetable": false,
+            "filterable": false
         },
         {
             "name": "usage_description",
@@ -60,7 +69,13 @@
             "name": "vector",
             "type": "Collection(Edm.Single)",
             "dimensions": 1536,
-            "vectorSearchProfile": "ector-profile-hnsw-scalar"
+            "vectorSearchProfile": "vector-profile-hnsw-scalar"
+        },
+        {
+            "name": "embedding_content",
+            "type": "Edm.String",
+            "searchable": true,
+            "sortable": true
         }
     ],
     "vectorSearch": {
