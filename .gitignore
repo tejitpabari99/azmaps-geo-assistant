@@ -7,3 +7,10 @@
 *__blobstorage__*
 *__queuestorage__*
 *__azurite*
+
+
+*data/
+*logs/
+*tmp/
+*chat_histories/
+*generated_maps/
