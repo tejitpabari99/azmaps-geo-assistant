@@ -25,7 +25,6 @@
     <fieldset id="info">
         <legend>{title}</legend>
         {description}
-        {explaination}
     </fieldset>
 
     {js}

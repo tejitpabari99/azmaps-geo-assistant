@@ -1,38 +1,25 @@
 class AzureMapsAgent {
     constructor() {
-        this.chatId = null;
+        this.isFirstMessage = true;
     }
 
-    async startChat(file, description = '') {
-        const fileContent = await this.readFile(file);
-        const response = await fetch('/api/start-chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                fileContent,
-                fileName: file.name,
-                userInput: description
-            })
-        });
-
-        const result = await response.json();
-        this.chatId = result.chatId;
-        return result.response;
-    }
-
-    async chat(userInput) {
+    async chat(userInput, fileContent = null, fileName = null, useAiSearch = false) {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                chatId: this.chatId,
-                userInput
+                userInput,
+                fileContent: this.isFirstMessage ? fileContent : undefined,
+                fileName: this.isFirstMessage ? fileName : undefined,
+                useAiSearch: this.isFirstMessage ? useAiSearch : undefined
             })
         });
+
+        if (this.isFirstMessage) {
+            this.isFirstMessage = false;
+        }
 
         return await response.json();
     }
@@ -52,7 +39,7 @@ class AzureMapsAgent {
     }
 
     reset() {
-        this.chatId = null;
+        this.isFirstMessage = true;
     }
 }
 
@@ -66,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const newChatButton = document.getElementById('newChatButton');
     const chatHistory = document.getElementById('chatHistory');
     const mapContainer = document.getElementById('mapContainer');
+    const aiSearchCheckbox = document.getElementById('aiSearchIndex');
     let currentMapFrame = null;
 
     function appendLoadingIndicator() {
@@ -83,26 +71,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    fileInput.addEventListener('change', async (e) => {
+    // Enable user input when file is selected
+    fileInput.addEventListener('change', (e) => {
         if (e.target.files[0]) {
-            const description = document.getElementById('fileDescription').value;
-            const loadingDiv = appendLoadingIndicator();
-            try {
-                const response = await agent.startChat(e.target.files[0], description);
-                document.getElementById('fileStatus').textContent = 'File loaded successfully!';
-                userInput.disabled = false;
-                sendButton.disabled = false;
-                
-                // Remove loading indicator and handle response
-                removeLoadingIndicator(loadingDiv);
-                appendMessage('agent', response.text);
-                if (response.mapHtml) {
-                    updateMap(response.mapHtml);
-                }
-            } catch (error) {
-                removeLoadingIndicator(loadingDiv);
-                document.getElementById('fileStatus').textContent = 'Error loading file: ' + error.message;
-            }
+            userInput.disabled = false;
+            sendButton.disabled = false;
+            document.getElementById('fileStatus').textContent = 'File ready to be processed';
         }
     });
 
@@ -118,10 +92,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         const loadingDiv = appendLoadingIndicator();
 
         try {
-            // Get agent response
-            const response = await agent.chat(message);
+            let response;
+            if (agent.isFirstMessage) {
+                // For first message, include file content and AI search preference
+                const file = fileInput.files[0];
+                if (!file) {
+                    throw new Error('Please select a file first');
+                }
+                const fileContent = await agent.readFile(file);
+                response = await agent.chat(message, fileContent, file.name, aiSearchCheckbox.checked);
+
+                // Disable file input and AI search checkbox after first message
+                fileInput.disabled = true;
+                aiSearchCheckbox.disabled = true;
+            } else {
+                response = await agent.chat(message);
+            }
+
             removeLoadingIndicator(loadingDiv);
-            appendMessage('agent', response.text);
+            
+            // Handle main response text
+            if (response.text) {
+                appendMessage('agent', response.text);
+            }
+
+            // Handle additional text if present
+            if (response.additionalText) {
+                appendMessage('agent', response.additionalText);
+            }
+
+            // Handle follow-up if present
+            if (response.followup) {
+                appendMessage('agent', response.followup, true);
+            }
 
             // Handle map if present
             if (response.mapHtml) {
@@ -129,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (error) {
             removeLoadingIndicator(loadingDiv);
-            appendMessage('agent', 'Error: Failed to get response');
+            appendMessage('agent', 'Error: ' + error.message);
         }
     };
 
@@ -148,6 +151,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         userInput.disabled = true;
         sendButton.disabled = true;
         fileInput.value = '';
+        fileInput.disabled = false;
+        aiSearchCheckbox.checked = true;
+        aiSearchCheckbox.disabled = false;
         document.getElementById('fileDescription').value = '';
         document.getElementById('fileStatus').textContent = '';
         if (currentMapFrame) {
@@ -157,10 +163,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         mapContainer.innerHTML = '<p class="initial-message">Generated maps will appear here</p>';
     });
 
-    function appendMessage(role, content) {
+    function appendMessage(role, content, isFollowup = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}-message`;
-        messageDiv.textContent = content;
+        
+        if (isFollowup && content.includes('\n')) {
+            // If it's a followup message with line breaks, replace them with <br/> tags
+            messageDiv.innerHTML = content.split('\n').join('<br/>');
+        } else {
+            messageDiv.textContent = content;
+        }
+        
         chatHistory.appendChild(messageDiv);
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }

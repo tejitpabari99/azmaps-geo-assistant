@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from ChatAssistant import ChatAssistant, ChatRequest, ChatMessage
+from ChatAssistant import ChatAssistant, ChatMessage
 import os
 
 from dotenv import load_dotenv
@@ -21,18 +21,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/api/start-chat")
-async def start_chat(request: ChatRequest):
-    try:
-        return await assistant.start_new_chat(request.fileContent, request.fileName, request.userInput)
-    except Exception as e:
-        assistant.logger.error(f"Failed to start new chat: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/api/chat")
 async def chat(request: ChatMessage):
     try:
-        return await assistant.process_message(request.chatId, request.userInput)
+        return await assistant.process_message(request)
     except ValueError as e:
         assistant.logger.error(f"Failed to process chat message: {str(e)}")
         raise HTTPException(status_code=404, detail=str(e))

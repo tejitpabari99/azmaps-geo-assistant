@@ -39,6 +39,28 @@ body {
     resize: none;
 }
 
+.checkbox-container {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-container input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.checkbox-container label {
+    cursor: pointer;
+    user-select: none;
+    color: #333;
+}
+
+.checkbox-container input[type="checkbox"]:disabled + label {
+    color: #999;
+    cursor: not-allowed;
+}
+
 .chat-container {
     display: flex;
     flex-direction: column;
@@ -130,14 +152,14 @@ body {
 #newChatButton {
     width: 100%;
     padding: 10px;
-    background-color: #4CAF50;
+    background-color: #2196F3; /* Select a nice blue color instead */
     color: white;
     border: none;
     cursor: pointer;
 }
 
 #newChatButton:hover {
-    background-color: #45a049;
+    background-color: #1976D2;
 }
 
 .initial-message {
