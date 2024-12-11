@@ -1,0 +1,25 @@
+{
+    "name": "azmaps-code-samples-docs-skillset",
+    "description": "Generate embeddings only",
+    "skills": [
+      {
+        "@odata.type": "#Microsoft.Skills.Text.AzureOpenAIEmbeddingSkill",
+        "context": "/document",
+        "inputs": [
+          {
+            "name": "text",
+            "source": "/document/embedding_content"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "embedding",
+            "targetName": "vector"
+          }
+        ],
+        "resourceUri": "https://openai-tejitpabari.openai.azure.com/",
+        "deploymentId": "text-embedding-ada-002",
+        "modelName": "text-embedding-ada-002"
+      }
+    ]
+  }

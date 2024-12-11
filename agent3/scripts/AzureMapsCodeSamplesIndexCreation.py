@@ -67,7 +67,17 @@ def process_html_sample(file_path, file_name, category):
     sample_json["embedding_content"] = f"title: {sample_json['title']} | category: {sample_json['category']} | description: {sample_json['description']} | usage_description: {sample_json['usage_description']} | keywords: {', '.join(sample_json['keywords'])}"
     return sample_json
 
-def process_all_samples():
+def process_html_sample2(file_path, file_name, category):
+    sample_json = process_html_sample(file_path, file_name, category)
+    return {
+        "id": sample_json["id"],
+        "content_type": "code_sample",
+        "title": sample_json["file_name"].split('.')[0],
+        "content": sample_json["content"],
+        "embedding_content": sample_json["embedding_content"]
+    }
+
+def process_all_samples(process_fun = process_html_sample, save_file_name = 'azmaps_code_samples.json', add_to_existing = False):
     source_folder = os.path.join(get_project_root(), CONSTANTS.AGENT3.AZURE_MAPS_CODE_SAMPLES_FOLDER)
     samples = []
 
@@ -80,16 +90,21 @@ def process_all_samples():
                 # Extract category (file root folder name) and store category - filename
                 category = root.split("\\")[-2].replace("-", " ")
                 file_name = f"{category}-{file}"
-                sample_json = process_html_sample(source_file, file_name, category)
+                sample_json = process_fun(source_file, file_name, category)
                 samples.append(sample_json)
 
-    dest_file_path = os.path.join(get_project_root(), CONSTANTS.AGENT3.DATA_FOLDER, 'azmaps_code_samples.json')
+    dest_file_path = os.path.join(get_project_root(), CONSTANTS.AGENT3.DATA_FOLDER, save_file_name)
+    if add_to_existing:
+        # If file is present, load it and append to it
+        if os.path.exists(dest_file_path):
+            existing_samples = json.load(open(dest_file_path, 'r'))
+            samples.extend(existing_samples)
+        json.dump(samples, open(dest_file_path, 'w'), indent=4)
+        return
     # If file is present, delete it
     if os.path.exists(dest_file_path):
         os.remove(dest_file_path)
     json.dump(samples, open(dest_file_path, 'w'), indent=4)
-
-
 
 def create_samples_folder_upload():
     source_folder = os.path.join(get_project_root(), CONSTANTS.AGENT3.AZURE_MAPS_CODE_SAMPLES_FOLDER)

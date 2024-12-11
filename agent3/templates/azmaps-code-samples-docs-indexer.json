@@ -1,0 +1,43 @@
+{
+    "name": "azmaps-code-samples-docs-indexer",
+    "dataSourceName": "azmaps-code-samples-docs-json",
+    "targetIndexName": "azmaps-code-samples-docs-index",
+    "skillsetName": "azmaps-code-samples-docs-skillset",
+    "fieldMappings": [
+        {
+            "sourceFieldName": "id",
+            "targetFieldName": "id"
+        },
+        {
+            "sourceFieldName": "content_type",
+            "targetFieldName": "content_type"
+        },
+        {
+            "sourceFieldName": "title",
+            "targetFieldName": "title"
+        },
+        {
+            "sourceFieldName": "content",
+            "targetFieldName": "content"
+        },
+        {
+            "sourceFieldName": "embedding_content",
+            "targetFieldName": "embedding_content"
+        }
+    ],
+    "outputFieldMappings": [
+        {
+            "sourceFieldName": "/document/vector",
+            "targetFieldName": "vector"
+        }
+    ],
+    "parameters": {
+        "maxFailedItems": -1,
+        "maxFailedItemsPerBatch": -1,
+        "configuration": {
+            "dataToExtract": "contentAndMetadata",
+            "parsingMode": "jsonArray",
+            "indexedFileNameExtensions": ".json"
+        }
+    }
+}
