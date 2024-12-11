@@ -3,7 +3,7 @@ class AzureMapsAgent {
         this.isFirstMessage = true;
     }
 
-    async chat(userInput, fileContent = null, fileName = null, useAiSearch = false) {
+    async chat(userInput, fileContents = null, fileNames = null, useAiSearch = false) {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -11,8 +11,8 @@ class AzureMapsAgent {
             },
             body: JSON.stringify({
                 userInput,
-                fileContent: this.isFirstMessage ? fileContent : undefined,
-                fileName: this.isFirstMessage ? fileName : undefined,
+                fileContents: this.isFirstMessage ? fileContents : undefined,
+                fileNames: this.isFirstMessage ? fileNames : undefined,
                 useAiSearch: this.isFirstMessage ? useAiSearch : undefined
             })
         });
@@ -47,7 +47,12 @@ class AzureMapsAgent {
 document.addEventListener('DOMContentLoaded', async () => {
     const agent = new AzureMapsAgent();
 
-    const fileInput = document.getElementById('fileInput');
+    const fileInputs = [
+        document.getElementById('file1'),
+        document.getElementById('file2'),
+        document.getElementById('file3')
+    ];
+    const fileList = document.getElementById('fileList');
     const userInput = document.getElementById('userInput');
     const sendButton = document.getElementById('sendButton');
     const newChatButton = document.getElementById('newChatButton');
@@ -71,13 +76,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Enable user input when file is selected
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files[0]) {
-            userInput.disabled = false;
-            sendButton.disabled = false;
-            document.getElementById('fileStatus').textContent = 'File ready to be processed';
-        }
+    function updateFileList() {
+        fileList.innerHTML = '';
+        const files = fileInputs
+            .map(input => input.files[0])
+            .filter(file => file !== undefined);
+        
+        files.forEach((file, index) => {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item';
+            fileDiv.textContent = `${index + 1}. ${file.name}`;
+            fileList.appendChild(fileDiv);
+        });
+
+        // Update file input states
+        fileInputs.forEach((input, index) => {
+            if (index > 0) {
+                input.disabled = !fileInputs[index - 1].files.length;
+            }
+        });
+
+        // Enable/disable chat input based on whether at least one file is selected
+        const hasFiles = files.length > 0;
+        userInput.disabled = !hasFiles;
+        sendButton.disabled = !hasFiles;
+        
+        // Update status
+        document.getElementById('fileStatus').textContent = hasFiles 
+            ? `${files.length} file(s) ready to be processed`
+            : '';
+    }
+
+    // Add change event listeners to all file inputs
+    fileInputs.forEach(input => {
+        input.addEventListener('change', updateFileList);
     });
 
     const handleUserInput = async () => {
@@ -94,16 +126,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             let response;
             if (agent.isFirstMessage) {
-                // For first message, include file content and AI search preference
-                const file = fileInput.files[0];
-                if (!file) {
-                    throw new Error('Please select a file first');
-                }
-                const fileContent = await agent.readFile(file);
-                response = await agent.chat(message, fileContent, file.name, aiSearchCheckbox.checked);
+                // Get all files that have been selected
+                const files = fileInputs
+                    .map(input => input.files[0])
+                    .filter(file => file !== undefined);
 
-                // Disable file input and AI search checkbox after first message
-                fileInput.disabled = true;
+                if (!files.length) {
+                    throw new Error('Please select at least one file first');
+                }
+
+                // Read all files
+                const fileContents = await Promise.all(files.map(file => agent.readFile(file)));
+                const fileNames = files.map(file => file.name);
+
+                response = await agent.chat(message, fileContents, fileNames, aiSearchCheckbox.checked);
+
+                // Disable file inputs and AI search checkbox after first message
+                fileInputs.forEach(input => input.disabled = true);
                 aiSearchCheckbox.disabled = true;
             } else {
                 response = await agent.chat(message);
@@ -150,8 +189,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         chatHistory.innerHTML = '';
         userInput.disabled = true;
         sendButton.disabled = true;
-        fileInput.value = '';
-        fileInput.disabled = false;
+        fileInputs.forEach((input, index) => {
+            input.value = '';
+            input.disabled = index > 0; // Only first input enabled initially
+        });
+        fileList.innerHTML = '';
         aiSearchCheckbox.checked = true;
         aiSearchCheckbox.disabled = false;
         document.getElementById('fileDescription').value = '';

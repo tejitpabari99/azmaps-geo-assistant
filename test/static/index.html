@@ -10,8 +10,22 @@
         <div class="sidebar">
             <div class="file-section">
                 <h3>File Upload</h3>
-                <p>Please upload a CSV or GeoJSON file to begin.</p>
-                <input type="file" id="fileInput" accept=".csv,.geojson" />
+                <p>Please upload up to 3 CSV or GeoJSON files to begin.</p>
+                <div class="file-upload-container">
+                    <div class="file-upload">
+                        <label for="file1">File 1:</label>
+                        <input type="file" id="file1" class="file-input" accept=".csv,.geojson" />
+                    </div>
+                    <div class="file-upload">
+                        <label for="file2">File 2:</label>
+                        <input type="file" id="file2" class="file-input" accept=".csv,.geojson" disabled />
+                    </div>
+                    <div class="file-upload">
+                        <label for="file3">File 3:</label>
+                        <input type="file" id="file3" class="file-input" accept=".csv,.geojson" disabled />
+                    </div>
+                </div>
+                <div id="fileList" class="file-list"></div>
                 <textarea id="fileDescription" placeholder="Optional: Add file description..."></textarea>
                 <div class="checkbox-container">
                     <input type="checkbox" id="aiSearchIndex" checked/>

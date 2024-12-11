@@ -27,9 +27,48 @@ body {
     margin-bottom: 20px;
 }
 
-#fileInput {
+.file-upload-container {
     margin: 10px 0;
-    width: 100%;
+}
+
+.file-upload {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-upload label {
+    min-width: 50px;
+    color: #333;
+}
+
+.file-input {
+    flex-grow: 1;
+}
+
+.file-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.file-list {
+    margin: 10px 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.file-item {
+    padding: 4px 8px;
+    margin: 2px 0;
+    background-color: #f8f9fa;
+    border-radius: 3px;
+    font-size: 14px;
+    color: #333;
 }
 
 #fileDescription {
@@ -152,7 +191,7 @@ body {
 #newChatButton {
     width: 100%;
     padding: 10px;
-    background-color: #2196F3; /* Select a nice blue color instead */
+    background-color: #2196F3;
     color: white;
     border: none;
     cursor: pointer;
@@ -166,4 +205,10 @@ body {
     text-align: center;
     color: #666;
     margin-top: 20px;
+}
+
+#fileStatus {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #666;
 }

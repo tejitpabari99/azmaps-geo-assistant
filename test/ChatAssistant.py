@@ -6,15 +6,15 @@ import json
 import uuid
 import logging
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from dotenv import load_dotenv
 load_dotenv()
 
 class ChatMessage(BaseModel):
     userInput: str
-    fileContent: Optional[str] = None
-    fileName: Optional[str] = None
+    fileContents: Optional[List[str]] = None
+    fileNames: Optional[List[str]] = None
     useAiSearch: Optional[bool] = False
 
 class ChatAssistant:
@@ -22,7 +22,7 @@ class ChatAssistant:
         """Initialize the ChatAssistant with necessary configurations and setup."""
         self._create_directories()
         self._setup_logging()
-        self._setup_code_blocks()
+        self._setup_response_blocks()
         self.client = self._initialize_azure_openai()
         self.current_conversation = None
         self.conversation_id = None  # For storage/logging only
@@ -41,14 +41,10 @@ class ChatAssistant:
         self.logger = logging.getLogger("azmaps-geo-assistant")
         self.logger.info("Initialized logging")
 
-    def _setup_code_blocks(self) -> None:
-        """Initialize the code blocks dictionary with None values."""
-        self.code_blocks = {
+    def _setup_response_blocks(self) -> None:
+        """Initialize the response blocks dictionary with None values."""
+        self.response_blocks = {
             'html': None,
-            'css': None,
-            'js': None,
-            'title': None,
-            'description': None,
             'followup': None,
             'explanation': None
         }
@@ -58,14 +54,6 @@ class ChatAssistant:
         directories = ["generated_maps", "chat_histories", "logs"]
         for directory in directories:
             os.makedirs(directory, exist_ok=True)
-            
-    def _get_html_template(self) -> str:
-        """Read and return the HTML template file content."""
-        return open('./templates/html_template.txt', 'r').read()
-
-    def _get_css_template(self) -> str:
-        """Read and return the CSS template file content."""
-        return open('./templates/css_template.txt', 'r').read()
 
     def _initialize_azure_openai(self) -> AzureOpenAI:
         """Initialize and return Azure OpenAI client with appropriate credentials."""
@@ -122,10 +110,15 @@ class ChatAssistant:
     async def process_message(self, request: ChatMessage) -> Dict[str, Any]:
         """Process incoming chat messages and manage conversation flow."""
         # If this is the first message (with file content)
-        if request.fileContent and request.fileName:
+        if request.fileContents and request.fileNames:
             self.conversation_id = str(uuid.uuid4())  # Generate ID for storage only
             self.logger.info(f"{self.conversation_id}: Starting new conversation")
-            sampled_content = self._sample_data(request.fileContent)
+            
+            # Process each file content
+            file_contents_str = ""
+            for i, (content, name) in enumerate(zip(request.fileContents, request.fileNames), 1):
+                sampled_content = self._sample_data(content)
+                file_contents_str += f"\nFile {i} ({name}):\n{sampled_content}\n"
             
             self.current_conversation = {
                 "chatId": self.conversation_id,
@@ -136,11 +129,11 @@ class ChatAssistant:
                     },
                     {
                         "role": "user",
-                        "content": f"File content:\n{sampled_content}\n\nUser query: {request.userInput}"
+                        "content": f"File contents:{file_contents_str}\n\nUser query: {request.userInput}"
                     }
                 ],
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "fileName": request.fileName,
+                "fileNames": request.fileNames,
                 "useAiSearch": request.useAiSearch
             }
         else:
@@ -161,59 +154,24 @@ class ChatAssistant:
             self.logger.error(f"{self.conversation_id}: Error: {str(e)}")
             raise
 
-    def _extract_code_blocks(self, response: str) -> Dict[str, Optional[str]]:
-        """Extract different code blocks and metadata from the response."""
-        # Extract HTML
-        html_match = re.search(r'<code-html>(.*?)</code-html>', response, re.DOTALL)
+    def _extract_response_blocks(self, response: str) -> None:
+        """Extract different blocks from the model's response."""
+        # Extract complete HTML
+        html_match = re.search(r'```(.*?)```', response, re.DOTALL)
         if html_match:
-            self.code_blocks['html'] = html_match.group(1).strip()
-            
-        # Extract CSS
-        css_match = re.search(r'<code-css>(.*?)</code-css>', response, re.DOTALL)
-        if css_match:
-            self.code_blocks['css'] = css_match.group(1).strip()
-            
-        # Extract JavaScript
-        js_match = re.search(r'<code-js>(.*?)</code-js>', response, re.DOTALL)
-        if js_match:
-            self.code_blocks['js'] = js_match.group(1).strip()
-
-        # Extract title
-        title_match = re.search(r'<sample-title>(.*?)</sample-title>', response, re.DOTALL)
-        if title_match:
-            self.code_blocks['title'] = title_match.group(1).strip()
-        
-        # Extract Description
-        description_match = re.search(r'<sample-description>(.*?)</sample-description>', response, re.DOTALL)
-        if description_match:
-            self.code_blocks['description'] = description_match.group(1).strip()
+            self.response_blocks['html'] = html_match.group(1).strip()
         
         # Extract Follow-up
         followup_match = re.search(r'<follow-up>(.*?)</follow-up>', response, re.DOTALL)
         if followup_match:
-            self.code_blocks['followup'] = followup_match.group(1).strip()
+            self.response_blocks['followup'] = followup_match.group(1).strip()
             
-        # Extract explanation (everything outside code blocks)
+        # Extract explanation (everything outside the blocks)
         explanation = response
-        for tag in ['code-html', 'code-css', 'code-js', 'sample-title', 'sample-description', 'follow-up']:
-            explanation = re.sub(f'<{tag}>.*?</{tag}>', '', explanation, flags=re.DOTALL)
-        self.code_blocks['explanation'] = explanation.strip()
-    
-    def _combine_code_blocks(self) -> str:
-        """Combine code blocks into a single HTML file using templates."""
-        html_template = self._get_html_template()
-        css_template = self._get_css_template()
-        
-        css = f"<style>\n{self.code_blocks['css']}\n{css_template}\n</style>" if self.code_blocks['css'] else f"{css_template}"
-        js = f"<script>\n{self.code_blocks['js']}\n</script>" if self.code_blocks['js'] else ""
-        
-        return html_template.format(
-            css=css,
-            js=js,
-            html=self.code_blocks['html'] or "",
-            title=self.code_blocks['title'] or "Azure Maps Sample",
-            description=self.code_blocks['description'] or "Azure Maps Sample Description",
-        )
+        # Remove all tagged blocks
+        explanation = re.sub(r'```.*?```', '', explanation, flags=re.DOTALL)
+        explanation = re.sub(r'<follow-up>.*?</follow-up>', '', explanation, flags=re.DOTALL)
+        self.response_blocks['explanation'] = explanation.strip()
 
     async def _process_chat(self, use_ai_search: bool = False) -> Dict[str, Any]:
         """Process chat messages through Azure OpenAI and handle the response."""
@@ -221,7 +179,9 @@ class ChatAssistant:
             if use_ai_search:
                 response = self.client.chat.completions.create(
                     model="gpt-4",
-                    temperature=0.3,
+                    temperature=0.2,
+                    presence_penalty= 0.1,
+                    frequency_penalty= 0.1,
                     max_tokens=3000,
                     top_p=1.0,
                     extra_body={  
@@ -241,6 +201,8 @@ class ChatAssistant:
                 response = self.client.chat.completions.create(
                     model="gpt-4",
                     temperature=0.2,
+                    presence_penalty= 0.1,
+                    frequency_penalty= 0.1,
                     max_tokens=3000,
                     top_p=1.0,
                     messages=self.current_conversation["history"]
@@ -249,19 +211,17 @@ class ChatAssistant:
             assistant_response = response.choices[0].message.content
             self._update_conversation_history(assistant_response)
             
-            # Extract code blocks
-            self._extract_code_blocks(assistant_response)
+            # Extract response blocks
+            self._extract_response_blocks(assistant_response)
             
-            if self.code_blocks['html'] or self.code_blocks['css'] or self.code_blocks['js']:
-                # Combine into single HTML file
-                combined_html = self._combine_code_blocks()
-                # Save and handle HTML response
-                return self._handle_html_response(combined_html)
+            if self.response_blocks['html']:
+                # Process and save the HTML response
+                return self._handle_html_response(self.response_blocks['html'])
             
             return {
                 "text": "No code returned",
-                "additionalText": self.code_blocks['explanation'],
-                "followup": None,
+                "additionalText": self.response_blocks['explanation'],
+                "followup": self.response_blocks['followup'],
                 "mapHtml": None
             }
         except Exception as e:
@@ -286,20 +246,21 @@ class ChatAssistant:
             os.getenv("AZURE_MAPS_SUB_KEY")
         )
 
-        # Replace placeholder USER_FILE_NAME with user file name
-        processed_html = processed_html.replace(
-            "USER_FILE_NAME",
-            "http://127.0.0.1:8000/data/data_sample/" + self.current_conversation["fileName"]
-        )
+        # Replace placeholder USER_FILE_NAME_X with user file names
+        for i, filename in enumerate(self.current_conversation["fileNames"], 1):
+            processed_html = processed_html.replace(
+                f"USER_FILE_NAME_{i}",
+                f"http://127.0.0.1:8000/data/data_sample/{filename}"
+            )
         
-        # Save combined HTML
+        # Save HTML
         with open(f"{base_filename}.html", "w") as f:
             f.write(processed_html)
             
         return {
             "text": "I've generated a map visualization. You can see it on the right panel.",
-            "additionalText": self.code_blocks['explanation'],
-            "followup": self.code_blocks['followup'],
+            "additionalText": self.response_blocks['explanation'],
+            "followup": self.response_blocks['followup'],
             "mapHtml": processed_html
         }
 
