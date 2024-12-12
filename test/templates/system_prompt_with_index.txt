@@ -44,12 +44,25 @@ CODE RULES:
 - MUST use id="map" for map container
 - NEVER use any other ID
 2. DATA HANDLING:
-- MUST use USER_FILE_NAME placeholder for data sources.
-   - In case of multiple file names, number them (USER_FILE_NAME_1, USER_FILE_NAME_2). IMPORTANT: Assume user will replace these placeholders in order of files provided.
+   - MUST use USER_FILE_NAME placeholder for data sources.
+   - In case of multiple file names, number them (USER_FILE_NAME_1, USER_FILE_NAME_2). 
+   IMPORTANT: Assume user will replace these placeholders in order of files provided.
 - MUST use AZURE_MAPS_SUBSCRIPTION_KEY placeholder in place of the Azure Maps Subscription Key
 - NEVER hardcode sample data
-- MUST use atlas.io.read for loading CSV data [atlas.io.read(USER_FILE_NAME, {type: 'csv'})]
-- MUST use datasource.importDataFromUrl for loading GeoJSON data [datasource.importDataFromUrl(USER_FILE_NAME);]
+- FOR CSV files
+   - MUST use atlas.io.read for loading ONLY CSV data
+   - NEVER use: importDataFromUrl, readFromUrl, or any other method
+   - Example:
+     atlas.io.read(USER_FILE_NAME, {type: 'csv'}).then(function(data) {
+         datasource.add(data);
+     });
+- FOR GEOJSON files
+   - MUST use datasource.importDataFromUrl for loading ONLY GeoJSON data
+   - NEVER use: atlas.io.read or any other method
+   - Example:
+      datasource.importDataFromUrl(USER_FILE_NAME).then(function(data) {
+         datasource.add(data)
+      });
 3. REQUIRED STRUCTURE:
 - Include Azure Maps CSS and JavaScript, and spatial IO dependencies. Do not remove dependencies if present in Template.
 - Style map container with width, height, min-height
@@ -116,7 +129,7 @@ HTML TEMPLATE:
 
 VALIDATION CHECKLIST:
 - Uses proper map container ID
-- Uses atlas.io.read for data loading for csv files, datasource.importDataFromUrl for GeoJSON files
+- Uses atlas.io.read for data loading for csv files, datasource.importDataFromUrl for ONLY GeoJSON files
 - No hardcoded data
 - Includes ALL required Azure Maps dependencies (Control AND Spatial IO)
 - Proper error handling
@@ -136,3 +149,7 @@ DO NOT:
 - Change map container ID
 - Omit any required dependencies
 - Create features not found in documentation
+
+CRITICAL WARNING:
+- NEVER use .readFromUrl or .importDataFromUrl for CSV files
+- Any response using incorrect data loading methods will be considered invalid

@@ -252,6 +252,10 @@ class ChatAssistant:
                 f"USER_FILE_NAME_{i}",
                 f"http://127.0.0.1:8000/data/data_sample/{filename}"
             )
+        processed_html = processed_html.replace(
+                f"USER_FILE_NAME",
+                f"http://127.0.0.1:8000/data/data_sample/{self.current_conversation['fileNames'][0]}"
+            )
         
         # Save HTML
         with open(f"{base_filename}.html", "w") as f:
